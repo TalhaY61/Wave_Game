@@ -14,6 +14,12 @@ public class Game extends Canvas implements Runnable {
     private Thread thread;
     private boolean running = false;
 
+    public static boolean paused = false;
+    public int diff = 0;
+
+    //0 = normal
+    //1 = hard
+
     private Handler handler;
     private Random r;
     private HUD hud;
@@ -29,11 +35,11 @@ public class Game extends Canvas implements Runnable {
         handler = new Handler();
         hud = new HUD();
         menu = new Menu(this, handler, hud);
-        spawner = new Spawn(handler, hud);
+        spawner = new Spawn(handler, hud, this);
         //1 random box
         r = new Random();
         
-        this.addKeyListener(new KeyInput(handler));
+        this.addKeyListener(new KeyInput(handler, this));
         this.addMouseListener(menu);
         
 
@@ -103,24 +109,28 @@ public class Game extends Canvas implements Runnable {
     }
 
     private void tick() {
-        handler.tick();
-        if (gameState == STATE.Game) {
-            hud.tick();
-            spawner.tick();
-
-            if (HUD.HEALTH <= 0) {
-                HUD.HEALTH = 100;
-                gameState = STATE.End;
-                handler.clearEnemys();
-                for (int i= 0; i < 20; i++) {
-                    handler.addObject(new MenuParticle(r.nextInt(WIDTH),r.nextInt(HEIGHT), ID.MenuParticle, handler));
-                }
-                
-            }
-        } else if (gameState == STATE.Menu || gameState == STATE.End) {
-            menu.tick();
-        }
         
+        if (gameState == STATE.Game) {
+            if (!(paused)) {
+                
+                
+                hud.tick();
+                spawner.tick();
+                handler.tick();
+
+                if (HUD.HEALTH <= 0) {
+                    HUD.HEALTH = 100;
+                    gameState = STATE.End;
+                    handler.clearEnemys();
+                    for (int i= 0; i < 20; i++) {
+                    handler.addObject(new MenuParticle(r.nextInt(WIDTH),r.nextInt(HEIGHT), ID.MenuParticle, handler));
+                    }
+                }  
+            } 
+        } else if (gameState == STATE.Menu || gameState == STATE.End || gameState == STATE.Select || gameState == STATE.Help) {
+            menu.tick();
+            handler.tick();
+        }  
     }
 
     private void render() {
@@ -135,11 +145,15 @@ public class Game extends Canvas implements Runnable {
         g.fillRect(0,0, WIDTH, HEIGHT);          //zeichnet einen gefülltes Rechteck startpunkt (x,y)
 
         handler.render(g);
-        
 
+        if (paused) {
+            g.setColor(Color.white);
+            g.drawString("PAUSED", 100, 100);
+        }
+        
         if (gameState == STATE.Game) {
             hud.render(g);
-        } else if (gameState == STATE.Menu || gameState == STATE.Help || gameState == STATE.End) {
+        } else if (gameState == STATE.Menu || gameState == STATE.Help || gameState == STATE.End || gameState == STATE.Select) {
             menu.render(g);
         } 
 

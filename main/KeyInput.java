@@ -7,9 +7,12 @@ public class KeyInput extends KeyAdapter {
 
     private Handler handler;
     private boolean[] keyDown = new boolean[4];
+    Game game;
 
-    public KeyInput(Handler handler) {
+    public KeyInput(Handler handler, Game game) {
         this.handler = handler;
+
+        this.game = game;
 
         //for (int i = 0; i < keyDown.length; i++) keyDown[i] = false;
         keyDown[0] = false; //W key
@@ -41,11 +44,19 @@ public class KeyInput extends KeyAdapter {
                 if(key == KeyEvent.VK_LEFT) tempObject.setVelX(-5);
                 if(key == KeyEvent.VK_RIGHT) tempObject.setVelX(5);
             } */
-        }     
+        }  
+        //paused the game
+        if (key == KeyEvent.VK_P) {
+            if(game.gameState == STATE.Game) {
+                if (Game.paused) Game.paused = false;
+                else Game.paused = true;
+            }
+        }
 
         //Verlassen das game mit der ESC Taste
         if (key == KeyEvent.VK_ESCAPE) System.exit(1);
     }
+
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
 
